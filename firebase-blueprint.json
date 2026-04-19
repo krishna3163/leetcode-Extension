@@ -1,0 +1,50 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Information about the LeetCode tracker user.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "leetcodeUsername": { "type": "string" },
+        "totalSolved": { "type": "integer" },
+        "rank": { "type": "integer" },
+        "friends": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of user UIDs for friends (max 5)"
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "lastUpdated": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    },
+    "Activity": {
+      "title": "Daily Activity",
+      "description": "Tracks LeetCode problems solved on a specific day.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "solvedCount": { "type": "integer" },
+        "timeSpent": { "type": "integer", "description": "Time spent in seconds" },
+        "problems": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["uid", "date"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile documents"
+    },
+    "/activities/{activityId}": {
+      "schema": "Activity",
+      "description": "Daily solve records"
+    }
+  }
+}

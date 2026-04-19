@@ -1,0 +1,43 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Connection Test
+    match /test/connection {
+      allow read: if true;
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read: if isSignedIn(); 
+      allow write: if isOwner(userId) && isValidId(userId);
+    }
+
+    // Activities collection
+    match /activities/{activityId} {
+      // Allow individual reads or queries by the owner
+      // Also allow friends to read (for leaderboard)
+      allow read: if isSignedIn() && (
+        resource.data.uid == request.auth.uid || 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.friends.hasAny([resource.data.uid])
+      );
+      
+      allow write: if isSignedIn() && request.resource.data.uid == request.auth.uid && isValidId(activityId);
+    }
+  }
+}
